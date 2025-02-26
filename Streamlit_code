@@ -1,0 +1,105 @@
+import streamlit as st
+import pickle
+from PIL import Image
+
+
+# Function to display home page
+def home_page():
+    st.title(':house: **Welcome to the Employee Attrition Predictor!**')
+    st.write("### Your one-stop solution to predict employee attrition and improve retention strategies. 🎯")
+    st.write("Use the sidebar to navigate through the app and explore different sections.")
+
+    # Displaying a welcoming image
+    img = Image.open('attrition2.jpg')
+    st.image(img, width=600, caption="Employee Attrition Prediction")
+
+    st.markdown("___")
+    st.write(
+        "Developed with machine learning to help companies predict employee attrition. Let's work together to improve workplace dynamics!")
+
+
+# Function for prediction page
+def prediction_page():
+    st.title(':office: **Employee Attrition Predictor**')
+    st.write("### Fill in the details below to predict employee attrition based on historical data.")
+
+    # Displaying an image
+    img = Image.open('attrition.jpg')
+    st.image(img, width=600, caption="Input Your Details for Prediction")
+
+    with st.sidebar:
+        st.header("**User Input Section**")
+
+    # Collecting user input
+    age = st.number_input('Age', min_value=18, max_value=65, step=1)
+    gender = st.radio('Gender', ['Male', 'Female'])
+    years_at_company = st.slider('Years at Company', min_value=0, max_value=40)
+    work_life_balance = st.selectbox('Work-Life Balance', ['Excellent', 'Good', 'Fair', 'Poor'])
+    job_satisfaction = st.selectbox('Job Satisfaction', ['Very High', 'High', 'Medium'])
+    performance_rating = st.selectbox('Performance Rating', ['High', 'Average', 'Low'])
+    number_of_promotions = st.number_input('Number of Promotions', min_value=0, max_value=10)
+    overtime = st.radio('Overtime', ['Yes', 'No'])
+    distance_from_home = st.slider('Distance from Home (km)', min_value=0, max_value=100)
+    education_level = st.selectbox('Education Level', ['High School', 'Bachelor', 'Master', 'PhD'])
+    marital_status = st.radio('Marital Status', ['Single', 'Married', 'Divorced'])
+    number_of_dependents = st.slider('Number of Dependents', min_value=0, max_value=10)
+    job_level = st.selectbox('Job Level', ['Entry', 'Mid', 'Senior'])
+    remote_work = st.radio('Remote Work', ['Yes', 'No'])
+    company_reputation = st.slider('Company Reputation', min_value=0, max_value=2)
+
+    # Mapping inputs to numerical values
+    gender_map = {'Male': 1, 'Female': 0}
+    overtime_map = {'Yes': 1, 'No': 0}
+    marital_status_map = {'Single': 0, 'Married': 1, 'Divorced': 2}
+    remote_map = {'Yes': 1, 'No': 0}
+    education_map = {'High School': 0, 'Bachelor': 1, 'Master': 2, 'PhD': 3}
+    work_life_map = {'Excellent': 3, 'Good': 2, 'Fair': 1, 'Poor': 0}
+    job_satisfaction_map = {'Very High': 3, 'High': 2, 'Medium': 1}
+    performance_map = {'High': 2, 'Average': 1, 'Low': 0}
+    job_level_map = {'Entry': 0, 'Mid': 1, 'Senior': 2}
+
+    features = [
+        age, gender_map[gender], years_at_company, work_life_map[work_life_balance],
+        job_satisfaction_map[job_satisfaction], performance_map[performance_rating], number_of_promotions,
+        overtime_map[overtime], distance_from_home, education_map[education_level],
+        marital_status_map[marital_status], number_of_dependents,
+        job_level_map[job_level], remote_map[remote_work], company_reputation
+    ]
+
+    # Loading the scaler and model
+    scaler = pickle.load(open('scaler.sav', 'rb'))
+    model = pickle.load(open('Gradient_boosting.sav', 'rb'))
+
+    # Prediction button and result
+    if st.button('🚀 **Predict Attrition**'):
+        scaled_features = scaler.transform([features])
+        prediction = model.predict(scaled_features)
+        result = '🔴 Likely to Leave' if prediction[0] == 1 else '🟢 Likely to Stay'
+        st.success(f'### Prediction: {result}')
+
+
+
+# Function for resources page
+def resources_page():
+    st.title(':link: **Useful Resources**')
+    st.markdown("### 📂 Dataset")
+    st.write("You can download the dataset from the following link:")
+    st.markdown(
+        "[Dataset Link](https://www.kaggle.com/datasets/stealthtechnologies/employee-attrition-dataset?select=train.csv)")
+
+    st.markdown("### 💻 Machine Learning Code")
+    st.write("Access the machine learning code repository here:")
+    st.markdown(
+        "[ML Code](https://colab.research.google.com/drive/1ZuJx13hR9cHx4XcF5Fe6gamgx4cfrD0v#scrollTo=7SqBA6fStaIR)")
+
+
+# Sidebar navigation
+st.sidebar.title(':compass: Navigation')
+menu = st.sidebar.radio("Go to", ['🏠 Home', '🔍 Prediction', '📚 Resources'])
+
+if menu == '🏠 Home':
+    home_page()
+elif menu == '🔍 Prediction':
+    prediction_page()
+elif menu == '📚 Resources':
+    resources_page()
